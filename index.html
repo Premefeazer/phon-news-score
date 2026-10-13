@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ระบบบันทึกสัญญาณชีพและประมวลผล NEWS Score โรงพยาบาลพล">
+  <title>NEWS Score โรงพยาบาลพล</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ───────────── เมนูด้านข้าง ───────────── -->
+  <aside class="rail">
+    <a class="brand" href="#/entry">
+      <span class="brand-mark"><img src="assets/img/logo.svg" alt="ตราโรงพยาบาลพล"></span>
+      <span class="brand-text"><strong>NEWS Score</strong><small>โรงพยาบาลพล</small></span>
+    </a>
+
+    <nav class="nav" aria-label="เมนูหลัก">
+      <a href="#/entry" data-route="entry">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v3H9z"/><path d="M8 4.5H6a1 1 0 0 0-1 1V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V5.5a1 1 0 0 0-1-1h-2"/><path d="M9 13.5h6M12 10.5v6"/></svg>
+        <span>บันทึกสัญญาณชีพ</span>
+      </a>
+      <a href="#/sheet" data-route="sheet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/></svg>
+        <span>ชีตข้อมูล</span>
+        <span class="nav-count" id="navCount">0</span>
+      </a>
+      <a href="#/criteria" data-route="criteria">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v14H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M8 8h7M8 11.5h5"/></svg>
+        <span>เกณฑ์การประเมิน</span>
+      </a>
+    </nav>
+
+    <div class="rail-foot">
+      <div class="clock">
+        <span class="clock-time" id="clockTime">--:--</span>
+        <span class="clock-date" id="clockDate"></span>
+      </div>
+      <p class="rail-note">ข้อมูลเก็บในเครื่องนี้ และลบอัตโนมัติเมื่อครบ 24 ชม.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ───────────── หน้าบันทึกข้อมูล ───────────── -->
+    <section class="view" id="view-entry" data-view="entry" hidden>
+      <header class="page-head">
+        <h1>บันทึกสัญญาณชีพ <span class="h-en">NEWS Score</span></h1>
+        <p class="head-aside">ใช้ประเมินในผู้ป่วยอายุ <b>15 ปีขึ้นไป</b> และไม่อยู่ในภาวะหายใจล้มเหลวเรื้อรัง</p>
+      </header>
+
+      <div class="edit-banner" id="editBanner" hidden>
+        <span>กำลังแก้ไขข้อมูล <b id="editLabel"></b></span>
+        <button type="button" class="btn btn-sm btn-ghost" id="cancelEdit">ยกเลิกการแก้ไข</button>
+      </div>
+
+      <div class="entry-grid">
+        <form id="entryForm" class="entry-form" novalidate autocomplete="off">
+
+          <section class="card" aria-labelledby="h-patient">
+            <h2 class="card-title" id="h-patient">ข้อมูลผู้ป่วย</h2>
+            <div class="field-grid">
+              <div class="field">
+                <label for="f-bed">Bed <span class="th">เตียง</span> <em class="req">*</em></label>
+                <input id="f-bed" name="bed" type="text" maxlength="20" placeholder="เช่น 12, ICU-3" required aria-describedby="e-bed">
+                <span class="field-err" id="e-bed"></span>
+              </div>
+              <div class="field">
+                <label for="f-name">Name <span class="th">ชื่อผู้ป่วย</span> <span class="opt">(ไม่บังคับ)</span></label>
+                <input id="f-name" name="name" type="text" maxlength="80" placeholder="ชื่อ-สกุล">
+              </div>
+              <div class="field">
+                <label for="f-ward">Ward <span class="th">หน่วยงาน</span> <span class="opt">(ไม่บังคับ)</span></label>
+                <input id="f-ward" name="ward" type="text" maxlength="60" list="wardList" placeholder="เช่น อายุรกรรมชาย">
+                <datalist id="wardList"></datalist>
+              </div>
+              <div class="field field-wide">
+                <label for="f-hn">HN <span class="th">เลขประจำตัวผู้ป่วย</span> <span class="opt">(ไม่บังคับ)</span></label>
+                <input id="f-hn" name="hn" type="text" maxlength="20" placeholder="เช่น 123456">
+              </div>
+              <div class="field field-wide">
+                <label for="f-an">AN <span class="th">เลขผู้ป่วยใน</span> <span class="opt">(ไม่บังคับ)</span></label>
+                <input id="f-an" name="an" type="text" maxlength="20" placeholder="เช่น 69012345">
+              </div>
+              <div class="field field-wide">
+                <label for="f-time">Date / Time <span class="th">เวลาที่วัด</span></label>
+                <div class="input-with-btn">
+                  <input id="f-time" name="time" type="datetime-local" aria-describedby="e-time">
+                  <button type="button" class="btn-now" id="btnNow">ตอนนี้</button>
+                </div>
+                <span class="field-err" id="e-time"></span>
+              </div>
+              <div class="field field-wide">
+                <label for="f-assessor">Assessor <span class="th">ผู้ประเมิน</span> <span class="opt">(ไม่บังคับ)</span></label>
+                <input id="f-assessor" name="assessor" type="text" maxlength="60" placeholder="ชื่อพยาบาลผู้ประเมิน">
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="h-vitals">
+            <h2 class="card-title" id="h-vitals">Vital signs <span class="th">สัญญาณชีพ</span></h2>
+            <div class="vitals" id="vitals"><!-- render โดย app.js --></div>
+
+            <div class="seg-grid">
+              <fieldset class="seg-field" data-param="o2">
+                <legend><b>O₂</b> <span class="th">การให้ออกซิเจน</span> <span class="chip" data-chip="o2">+0</span></legend>
+                <div class="seg">
+                  <input type="radio" name="o2" id="o2-air" value="air" checked><label for="o2-air">Room air</label>
+                  <input type="radio" name="o2" id="o2-on" value="o2"><label for="o2-on">On O₂</label>
+                </div>
+              </fieldset>
+
+              <fieldset class="seg-field" data-param="avpu">
+                <legend><b>Consciousness</b> <span class="th">ระดับความรู้สึกตัว (ACVPU)</span> <span class="chip" data-chip="avpu">+0</span></legend>
+                <div class="seg seg-5">
+                  <input type="radio" name="avpu" id="avpu-a" value="A" checked><label for="avpu-a" title="Alert: รู้สึกตัวดี">A<small>Alert</small></label>
+                  <input type="radio" name="avpu" id="avpu-c" value="C"><label for="avpu-c" title="New confusion: สับสนเกิดขึ้นใหม่">C<small>Confusion</small></label>
+                  <input type="radio" name="avpu" id="avpu-v" value="V"><label for="avpu-v" title="Voice: ตอบสนองต่อเสียง">V<small>Voice</small></label>
+                  <input type="radio" name="avpu" id="avpu-p" value="P"><label for="avpu-p" title="Pain: ตอบสนองต่อความเจ็บปวด">P<small>Pain</small></label>
+                  <input type="radio" name="avpu" id="avpu-u" value="U"><label for="avpu-u" title="Unresponsive: ไม่ตอบสนอง">U<small>Unresponsive</small></label>
+                </div>
+              </fieldset>
+            </div>
+          </section>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="btnReset">ล้างฟอร์ม</button>
+            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit"><span>ประเมินและบันทึก</span></button>
+          </div>
+        </form>
+
+        <!-- คะแนนรวม -->
+        <aside class="live card" id="live" data-level="none" aria-live="polite">
+          <h2 class="live-title">NEWS Score</h2>
+          <div class="live-score">
+            <span class="live-total" id="liveTotal">-</span>
+          </div>
+          <p class="live-note" id="liveNote">กรอกสัญญาณชีพให้ครบเพื่อคำนวณ</p>
+
+          <ol class="scale" aria-label="ระดับคะแนน">
+            <li data-lvl="green"><b>0-2</b><span>เขียว</span></li>
+            <li data-lvl="yellow"><b>3-4</b><span>เหลือง</span></li>
+            <li data-lvl="orange"><b>5-6</b><span>ส้ม</span></li>
+            <li data-lvl="red"><b>≥ 7</b><span>แดง</span></li>
+          </ol>
+
+          <div class="live-action" id="liveAction"></div>
+          <p class="live-flag" id="liveFlag" hidden></p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ───────────── หน้าชีต ───────────── -->
+    <section class="view" id="view-sheet" data-view="sheet" hidden>
+      <header class="page-head">
+        <h1>ชีตข้อมูล <span class="h-en">NEWS Score</span></h1>
+        <div class="dropdown" id="exportMenu">
+          <button type="button" class="btn btn-primary" id="btnExport" aria-haspopup="menu" aria-expanded="false" aria-controls="exportList">
+            ส่งออกข้อมูล
+            <svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="menu" id="exportList" role="menu" aria-labelledby="btnExport" hidden>
+            <button type="button" role="menuitem" data-export="xlsx"><b>Excel</b><small>ไฟล์ .xlsx สำหรับ Microsoft Excel</small></button>
+            <button type="button" role="menuitem" data-export="csv"><b>CSV</b><small>ไฟล์ .csv เปิดได้ทุกโปรแกรมตาราง</small></button>
+            <button type="button" role="menuitem" data-export="pdf"><b>PDF</b><small>ไฟล์ .pdf ตามแบบฟอร์ม A4 แนวนอน</small></button>
+            <button type="button" role="menuitem" data-export="print"><b>พิมพ์</b><small>สั่งพิมพ์ผ่านเครื่องพิมพ์</small></button>
+          </div>
+        </div>
+      </header>
+
+      <div class="summary" id="summary"><!-- render โดย app.js --></div>
+
+      <div class="toolbar card">
+        <label class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+          <input type="search" id="q" placeholder="ค้นหา Bed / ชื่อ / ผู้ประเมิน" aria-label="ค้นหา">
+        </label>
+        <select id="fWard" aria-label="กรองหน่วยงาน"><option value="">ทุกหน่วยงาน</option></select>
+        <select id="fLevel" aria-label="กรองระดับ">
+          <option value="">ทุกระดับ</option>
+          <option value="red">แดง (≥ 7)</option>
+          <option value="orange">ส้ม (5-6)</option>
+          <option value="yellow">เหลือง (3-4)</option>
+          <option value="green">เขียว (0-2)</option>
+        </select>
+        <label class="switch">
+          <input type="checkbox" id="fLatest">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span>เฉพาะครั้งล่าสุดของแต่ละเตียง</span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="fScores">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span>แสดงคะแนนย่อย</span>
+        </label>
+        <label class="switch" title="เสียงและข้อความแจ้งเตือนเมื่อถึงเวลาประเมินซ้ำ (ทำงานเมื่อเปิดหน้าเว็บนี้ค้างไว้)">
+          <input type="checkbox" id="fAlert">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span>แจ้งเตือนเมื่อถึงเวลาประเมินซ้ำ</span>
+        </label>
+        <button type="button" class="btn btn-sm btn-danger-ghost" id="btnClear">ลบข้อมูลทั้งหมด</button>
+      </div>
+
+      <div class="table-wrap card">
+        <table class="sheet">
+          <thead>
+            <tr>
+              <th>Date / Time</th>
+              <th>Bed</th>
+              <th>Name</th>
+              <th class="num">BT<small>°C</small></th>
+              <th class="num">PR<small>bpm</small></th>
+              <th class="num">RR<small>/min</small></th>
+              <th class="num">SBP<small>mmHg</small></th>
+              <th class="num">DBP<small>mmHg</small></th>
+              <th class="num">SpO₂<small>%</small></th>
+              <th>O₂</th>
+              <th>AVPU</th>
+              <th class="num">NEWS</th>
+              <th>Ward</th>
+              <th>ประเมินซ้ำ</th>
+              <th>รายงานแพทย์</th>
+              <th class="actions"><span class="sr-only">จัดการ</span></th>
+            </tr>
+          </thead>
+          <tbody id="sheetBody"></tbody>
+        </table>
+        <div class="empty" id="sheetEmpty" hidden>
+          <p id="emptyText">ยังไม่มีข้อมูลในชีต</p>
+          <a class="btn btn-primary btn-sm" href="#/entry">บันทึกสัญญาณชีพ</a>
+        </div>
+      </div>
+
+      <p class="sheet-foot" id="sheetFoot"></p>
+    </section>
+
+    <!-- ───────────── หน้าเกณฑ์ ───────────── -->
+    <section class="view" id="view-criteria" data-view="criteria" hidden>
+      <header class="page-head">
+        <h1>เกณฑ์การประเมิน <span class="h-en">NEWS Score</span></h1>
+      </header>
+
+      <section class="card">
+        <h2 class="card-title">ตารางให้คะแนน NEWS2 <span class="th">(NEWS2 scoring system)</span></h2>
+        <div class="chart-wrap">
+          <table class="chart">
+            <thead>
+              <tr><th>Physiological parameter</th><th class="s3">3</th><th class="s2">2</th><th class="s1">1</th><th class="s0">0</th><th class="s1">1</th><th class="s2">2</th><th class="s3">3</th></tr>
+            </thead>
+            <tbody>
+              <tr><th>RR <span class="full">Respiratory Rate</span><small>อัตราการหายใจ (ครั้ง/นาที)</small></th><td class="s3">≤ 8</td><td></td><td class="s1">9-11</td><td class="s0">12-20</td><td></td><td class="s2">21-24</td><td class="s3">≥ 25</td></tr>
+              <tr><th>SpO₂ Scale 1 <span class="full">Peripheral Oxygen Saturation</span><small>ความอิ่มตัวของออกซิเจนในเลือด (%)</small></th><td class="s3">≤ 91</td><td class="s2">92-93</td><td class="s1">94-95</td><td class="s0">≥ 96</td><td></td><td></td><td></td></tr>
+              <tr><th>Air or O₂ <span class="full">Air or Supplemental Oxygen</span><small>หายใจเองหรือได้รับออกซิเจน</small></th><td></td><td class="s2">Oxygen</td><td></td><td class="s0">Air</td><td></td><td></td><td></td></tr>
+              <tr><th>SBP <span class="full">Systolic Blood Pressure</span><small>ความดันโลหิตซิสโตลิก (mmHg)</small></th><td class="s3">≤ 90</td><td class="s2">91-100</td><td class="s1">101-110</td><td class="s0">111-219</td><td></td><td></td><td class="s3">≥ 220</td></tr>
+              <tr><th>PR <span class="full">Pulse Rate</span><small>ชีพจร (ครั้ง/นาที)</small></th><td class="s3">≤ 40</td><td></td><td class="s1">41-50</td><td class="s0">51-90</td><td class="s1">91-110</td><td class="s2">111-130</td><td class="s3">≥ 131</td></tr>
+              <tr><th>ACVPU <span class="full">Level of Consciousness</span><small>ระดับความรู้สึกตัว</small></th><td></td><td></td><td></td><td class="s0">Alert</td><td></td><td></td><td class="s3">CVPU</td></tr>
+              <tr><th>BT <span class="full">Body Temperature</span><small>อุณหภูมิกาย (°C)</small></th><td class="s3">≤ 35.0</td><td></td><td class="s1">35.1-36.0</td><td class="s0">36.1-38.0</td><td class="s1">38.1-39.0</td><td class="s2">≥ 39.1</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted small chart-note">DBP (Diastolic Blood Pressure) บันทึกไว้เพื่อการติดตาม แต่ไม่นำมาคิดคะแนน</p>
+      </section>
+
+
+      <h2 class="section-title">แนวทางปฏิบัติตามระดับคะแนน</h2>
+      <div class="response-grid" id="responseGrid"><!-- render โดย app.js --></div>
+      <p class="muted small criteria-note">เครื่องมือนี้ช่วยคำนวณคะแนนเท่านั้น ไม่ใช้แทนการประเมินทางคลินิกของพยาบาลและแพทย์</p>
+    </section>
+
+    <!-- ───────────── Footer ───────────── -->
+    <footer class="site-foot">
+      <div class="foot-credit">
+        <p>นำมาประยุกต์เป็น Web page โดย <b>นางสุมาลัย กุลวงษ์</b> พยาบาลวิชาชีพ โรงพยาบาลพล</p>
+        <p>ผู้ประสานงาน Service Plan Sepsis</p>
+        <p>เลขานุการ IM Nurse</p>
+      </div>
+      <div class="foot-ref">
+        <p><b>อ้างอิง</b><br>Royal College of Physicians. (2017). <i>National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS.</i> Updated report of a working party.</p>
+        <p><a href="https://www.rcp.ac.uk/resources/national-early-warning-score-news-2/" target="_blank" rel="noopener">https://www.rcp.ac.uk/resources/national-early-warning-score-news-2/</a></p>
+      </div>
+      <p class="foot-copy">เวอร์ชันทดลอง ยังไม่นำไปใช้งานจริงกับผู้ป่วย<br>© 2569 จัดทำโดย นายกฤติพงศ์ กุลวงษ์ สงวนลิขสิทธิ์</p>
+    </footer>
+
+  </main>
+</div>
+
+<!-- ───────────── Pop-up ผลการประเมิน ───────────── -->
+<div class="modal" id="resultModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="resTitle" data-level="green">
+    <div class="res-head">
+      <div class="res-topline">
+        <span class="res-meta" id="resMeta"></span>
+        <button type="button" class="res-close" data-close aria-label="ปิด">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <h2 class="res-title" id="resTitle">NEWS Score = <b id="resTotal">0</b></h2>
+      <p class="res-action" id="resAction"></p>
+      <p class="res-band" id="resBand"></p>
+    </div>
+    <div class="res-body">
+      <div class="res-warn" id="resWarn" hidden></div>
+      <ul class="res-breakdown" id="resBreakdown"></ul>
+      <p class="res-next" id="resNext"></p>
+      <div class="res-buttons">
+        <button type="button" class="btn btn-ghost" id="resReport" hidden>บันทึกการรายงานแพทย์</button>
+        <a href="#/sheet" class="btn btn-ghost" id="resSheet">ดูชีตข้อมูล</a>
+        <button type="button" class="btn btn-primary" id="resNew">บันทึกรายต่อไป</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────── Pop-up บันทึกการรายงานแพทย์ ───────────── -->
+<div class="modal" id="reportModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card dlg" role="dialog" aria-modal="true" aria-labelledby="rpTitle">
+    <div class="dlg-head">
+      <h2 id="rpTitle">บันทึกการรายงานแพทย์</h2>
+      <button type="button" class="dlg-close" data-close aria-label="ปิด">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <form class="dlg-body" id="reportForm" novalidate autocomplete="off">
+      <p class="dlg-sub" id="rpSub"></p>
+      <div class="field">
+        <label for="rp-time">เวลาที่รายงานแพทย์ <em class="req">*</em></label>
+        <div class="input-with-btn">
+          <input id="rp-time" type="datetime-local" aria-describedby="rp-time-err">
+          <button type="button" class="btn-now" id="rpNow">ตอนนี้</button>
+        </div>
+        <span class="field-err" id="rp-time-err"></span>
+      </div>
+      <div class="field">
+        <label for="rp-doctor">ชื่อแพทย์ที่รับรายงาน <span class="opt">(ไม่บังคับ)</span></label>
+        <input id="rp-doctor" type="text" maxlength="60" placeholder="เช่น นพ.สมชาย">
+      </div>
+      <p class="dlg-note" id="rpElapsed"></p>
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-sm btn-danger-ghost" id="rpClear" hidden>ลบบันทึกการรายงาน</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-ghost" data-close>ยกเลิก</button>
+        <button type="submit" class="btn btn-primary">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ───────────── Pop-up กราฟแนวโน้ม ───────────── -->
+<div class="modal" id="trendModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card dlg dlg-wide" role="dialog" aria-modal="true" aria-labelledby="trTitle">
+    <div class="dlg-head">
+      <h2 id="trTitle">แนวโน้มคะแนน NEWS</h2>
+      <button type="button" class="dlg-close" data-close aria-label="ปิด">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="dlg-body">
+      <p class="dlg-sub" id="trSub"></p>
+      <div class="tr-chart" id="trChart"></div>
+      <p class="dlg-note" id="trNote"></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="printArea" aria-hidden="true"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+<script src="assets/js/news.js" defer></script>
+<script src="assets/js/store.js" defer></script>
+<script src="assets/js/app.js" defer></script>
+</body>
+</html>
