@@ -88,7 +88,6 @@
       bed: form.elements.bed.value.trim(),
       name: form.elements.name.value.trim(),
       ward: form.elements.ward.value.trim(),
-      hn: form.elements.hn.value.trim(),
       an: form.elements.an.value.trim(),
       assessor: form.elements.assessor.value.trim(),
       measuredAt: t ? new Date(t).getTime() : NaN,
@@ -234,7 +233,7 @@
     const now = Date.now();
     const rec = {
       measuredAt: meta.measuredAt,
-      ward: meta.ward, bed: meta.bed, name: meta.name, hn: meta.hn, an: meta.an, assessor: meta.assessor,
+      ward: meta.ward, bed: meta.bed, name: meta.name, an: meta.an, assessor: meta.assessor,
       bt: Math.round(v.bt * 10) / 10, pr: v.pr, rr: v.rr, sbp: v.sbp, dbp: v.dbp, spo2: v.spo2,
       o2: v.o2, avpu: v.avpu,
       scores: res.scores, total: res.total, level: res.level, redFlags: res.redFlags,
@@ -264,7 +263,7 @@
     resetForm();
     editingId = id;
     const f = form.elements;
-    f.bed.value = r.bed; f.name.value = r.name || ''; f.ward.value = r.ward || ''; f.hn.value = r.hn || ''; f.an.value = r.an || ''; f.assessor.value = r.assessor || '';
+    f.bed.value = r.bed; f.name.value = r.name || ''; f.ward.value = r.ward || ''; f.an.value = r.an || ''; f.assessor.value = r.assessor || '';
     f.time.value = toLocalInput(r.measuredAt); timeTouched = true;
     VITALS.forEach(p => { f[p.key].value = r[p.key] ?? ''; });
     $(`#o2-${r.o2 ? 'on' : 'air'}`).checked = true;
@@ -405,7 +404,7 @@
     const k = bedKey(r);
     const pts = Store.all().filter(x => bedKey(x) === k).sort((a, b) => a.measuredAt - b.measuredAt || a.savedAt - b.savedAt);
     $('#trTitle').textContent = `แนวโน้มคะแนน NEWS เตียง ${r.bed}`;
-    $('#trSub').textContent = [r.ward, r.name, r.hn && `HN ${r.hn}`, r.an && `AN ${r.an}`].filter(Boolean).join(' | ') || ' ';
+    $('#trSub').textContent = [r.ward, r.name, r.an && `AN ${r.an}`].filter(Boolean).join(' | ') || ' ';
     $('#trChart').innerHTML = trendSvg(pts);
 
     const last = pts[pts.length - 1];
@@ -539,7 +538,7 @@
       (!onlyLatest || latest.has(r.id)) &&
       (!ward || r.ward === ward) &&
       (!lvl || r.level === lvl) &&
-      (!q || [r.bed, r.name, r.hn, r.an, r.assessor, r.ward].some(x => String(x || '').toLowerCase().includes(q)))
+      (!q || [r.bed, r.name, r.an, r.assessor, r.ward].some(x => String(x || '').toLowerCase().includes(q)))
     ).sort((a, b) => b.measuredAt - a.measuredAt || b.savedAt - a.savedAt);
 
     return { rows, latest, all };
@@ -615,7 +614,7 @@
       return `<tr data-id="${esc(r.id)}" data-level="${r.level}" class="${isLatest ? 'is-latest' : 'is-old'}">
         <td class="t-time"><span>${fmtTime(r.measuredAt)}</span><small>${fmtDate(r.measuredAt)}</small></td>
         <td class="t-bed"><button type="button" class="bed-link" data-act="trend" title="ดูกราฟแนวโน้มคะแนนของเตียงนี้">${esc(r.bed)}</button></td>
-        <td class="t-name">${r.name ? esc(r.name) : '<span class="muted">-</span>'}${r.hn || r.an ? `<small>${[r.hn && 'HN ' + esc(r.hn), r.an && 'AN ' + esc(r.an)].filter(Boolean).join(' · ')}</small>` : ''}${r.assessor ? `<small>ผู้ประเมิน: ${esc(r.assessor)}</small>` : ''}</td>
+        <td class="t-name">${r.name ? esc(r.name) : '<span class="muted">-</span>'}${r.an ? `<small>AN ${esc(r.an)}</small>` : ''}${r.assessor ? `<small>ผู้ประเมิน: ${esc(r.assessor)}</small>` : ''}</td>
         <td class="num${cls('bt')}">${fmtVal('bt', r.bt)}${sc('bt')}</td>
         <td class="num${cls('pr')}">${fmtVal('pr', r.pr)}${sc('pr')}</td>
         <td class="num${cls('rr')}">${fmtVal('rr', r.rr)}${sc('rr')}</td>
@@ -652,13 +651,13 @@
   }
 
   /* ───────────── EXPORT ───────────── */
-  const EXPORT_HEADERS = ['วันที่', 'เวลา', 'หน่วยงาน', 'Bed', 'Name', 'HN', 'AN', 'BT (°C)', 'PR (bpm)', 'RR (/min)', 'SBP (mmHg)', 'DBP (mmHg)', 'SpO2 (%)', 'O2', 'ความรู้สึกตัว', 'NEWS Score', 'ระดับ', 'ข้อปฏิบัติ', 'ผู้ประเมิน', 'รายงานแพทย์', 'เวลารายงานแพทย์', 'แพทย์ที่รับรายงาน'];
+  const EXPORT_HEADERS = ['วันที่', 'เวลา', 'หน่วยงาน', 'Bed', 'Name', 'AN', 'BT (°C)', 'PR (bpm)', 'RR (/min)', 'SBP (mmHg)', 'DBP (mmHg)', 'SpO2 (%)', 'O2', 'ความรู้สึกตัว', 'NEWS Score', 'ระดับ', 'ข้อปฏิบัติ', 'ผู้ประเมิน', 'รายงานแพทย์', 'เวลารายงานแพทย์', 'แพทย์ที่รับรายงาน'];
   const EXPORT_WIDTHS = [12, 7, 18, 8, 22, 12, 12, 8, 8, 9, 10, 10, 9, 10, 12, 11, 9, 52, 18, 12, 16, 20];
 
   function exportRow(r) {
     const L = NEWS.LEVELS[r.level];
     return [
-      fmtDate(r.measuredAt), fmtTime(r.measuredAt), r.ward || '', r.bed, r.name || '', r.hn || '', r.an || '',
+      fmtDate(r.measuredAt), fmtTime(r.measuredAt), r.ward || '', r.bed, r.name || '', r.an || '',
       r.bt, r.pr, r.rr, r.sbp, r.dbp ?? '', r.spo2,
       r.o2 ? 'On O2' : 'Room air', r.avpu, r.total, L.name, L.lines.join(' '), r.assessor || '',
       r.report ? 'รายงานแล้ว' : (r.level === 'orange' || r.level === 'red' ? 'ยังไม่บันทึก' : ''),
@@ -728,7 +727,7 @@
     const body = rows.map(r => `
       <tr>
         <td>${esc(r.bed)}</td>
-        <td class="rp-name">${esc(r.name || '')}${r.hn || r.an ? `<br><small>${[r.hn && 'HN ' + esc(r.hn), r.an && 'AN ' + esc(r.an)].filter(Boolean).join(' · ')}</small>` : ''}</td>
+        <td class="rp-name">${esc(r.name || '')}${r.an ? `<br><small>AN ${esc(r.an)}</small>` : ''}</td>
         <td>${fmtVal('bt', r.bt)}</td>
         <td>${fmtVal('pr', r.pr)}</td>
         <td>${fmtVal('rr', r.rr)}</td>
